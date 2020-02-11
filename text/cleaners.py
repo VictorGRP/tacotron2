@@ -15,6 +15,7 @@ hyperparameter. Some cleaners are English-specific. You'll typically want to use
 import re
 from unidecode import unidecode
 from .numbers import normalize_numbers
+from text import symbols
 
 
 # Regular expression matching whitespace:
@@ -69,6 +70,8 @@ def basic_cleaners(text):
   '''Basic pipeline that lowercases and collapses whitespace without transliteration.'''
   text = lowercase(text)
   text = collapse_whitespace(text)
+  #text += symbols._eos #Utilizado para la voz de niño y la de inglés, hay que comentarlo para los demás modelos
+  #print(text)
   return text
 
 
@@ -87,4 +90,5 @@ def english_cleaners(text):
   text = expand_numbers(text)
   text = expand_abbreviations(text)
   text = collapse_whitespace(text)
+  text += symbols._eos #Utilizado para la voz de niño y la de inglés, hay que comentarlo para los demás modelos
   return text
