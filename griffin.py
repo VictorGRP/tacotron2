@@ -20,9 +20,20 @@ def infer(checkpoint_path, griffin_iters, line, out_filename):
     hparams.sampling_rate = 22050
 
     model = load_model(hparams)
-    model.load_state_dict(torch.load('checkpoint_10000')['state_dict'])
-    _ = model.cuda().eval()#.half()
     
+    if torch.cuda.is_available():
+        model.load_state_dict(torch.load('checkpoint_10000')['state_dict'])
+        _ = model.cuda().eval()
+        sequence = np.array(text_to_sequence(line, ['basic_cleaners']))[None, :]
+        sequence = torch.autograd.Variable(torch.from_numpy(sequence)).cuda().long()
+    else:
+        model.load_state_dict(torch.load('checkpoint_10000',map_location='cpu')['state_dict'])
+        _ = model.eval()
+        sequence = np.array(text_to_sequence(line, ['basic_cleaners']))[None, :]
+        sequence = torch.autograd.Variable(torch.from_numpy(sequence)).long()    
+
+    #_ = model.cuda().eval()#.half()
+    _ = model.eval()#.half()    
     # ~ filelist= open(file_text,'r')
     # ~ i=0
     # ~ for line in tqdm(filelist):
@@ -51,8 +62,9 @@ def infer(checkpoint_path, griffin_iters, line, out_filename):
        # ~ write(audio_path, hparams.sampling_rate, audio)
        # ~ print(audio_path)
 
-    sequence = np.array(text_to_sequence(line, ['basic_cleaners']))[None, :]
-    sequence = torch.autograd.Variable(torch.from_numpy(sequence)).cuda().long()
+    #sequence = np.array(text_to_sequence(line, ['basic_cleaners']))[None, :]
+    #sequence = torch.autograd.Variable(torch.from_numpy(sequence)).cuda().long()
+    #sequence = torch.autograd.Variable(torch.from_numpy(sequence)).long()
 
     mel_outputs, mel_outputs_postnet, _, alignments = model.inference(sequence)
 
